@@ -62,16 +62,16 @@ class HelpdeskMailer < ActionMailer::Base
       t = text.present? ? "#{text}\n\n#{footer}" : reply
       @body = expand_macros(t, issue, journal)
       f = CustomField.find_by_name('helpdesk-reply-separator')
-      reply_separator = issue.project.custom_value_for(f).try(:value)
-      if !reply_separator.blank?
-        @body = reply_separator + "\n\n" + @body
+      @reply_separator = issue.project.custom_value_for(f).try(:value)
+      if !@reply_separator.blank?
+        plaintext_body = @reply_separator + "\n\n" + @body
       end
       mail(
         :from     => sender.present? && sender || Setting.mail_from,
         :reply_to => sender.present? && sender || Setting.mail_from,
         :to       => recipient,
         :subject  => subject,
-        :body     => send_html_emails ? nil : @body,
+        :body     => send_html_emails ? nil : plaintext_body,
         :date     => Time.zone.now
       )
     else
